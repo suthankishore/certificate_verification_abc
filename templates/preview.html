@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificate Preview - ABC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Final Certificate Preview</h2>
+    <p><strong>Student:</strong> {{ student_name }}</p>
+    <p><strong>Register No:</strong> {{ register_number }}</p>
+    <p><strong>Course:</strong> {{ course }}</p>
+    <p><strong>Issue Date:</strong> {{ issue_date }}</p>
+
+    <div class="preview-wrap">
+        <!-- Embed the final image served by admin preview_file endpoint -->
+        <img src="{{ url_for('admin.preview_file', filename=final_image_filename) }}" alt="Final Certificate" class="certificate-preview">
+    </div>
+
+    <div class="button-group">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn">Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>
+

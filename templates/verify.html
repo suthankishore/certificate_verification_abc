@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Certificate - ABC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Certificate Verification</h2>
+
+    <p><strong>CID:</strong> {{ cid }}</p>
+    <p><strong>IPFS Status:</strong> {% if cid %}Stored{% else %}Missing{% endif %}</p>
+
+    {% if blockchain_verified %}
+        <p class="verified">Blockchain Verified &#10004;</p>
+    {% else %}
+        <p class="unverified">Not Verified on Blockchain</p>
+    {% endif %}
+
+    {% if blockchain_tx %}
+        <p><strong>Blockchain TX:</strong> {{ blockchain_tx }}</p>
+    {% endif %}
+
+    {% if certificate %}
+        <p><strong>Student:</strong> {{ certificate.student_name }}</p>
+        <p><strong>Register No:</strong> {{ certificate.register_number }}</p>
+        <p><strong>Course:</strong> {{ certificate.course }}</p>
+        <p><strong>Issue Date:</strong> {{ certificate.issue_date }}</p>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <h3>AI Forgery Recheck</h3>
+    <form method="post" enctype="multipart/form-data">
+        <label>Upload Certificate Image (PNG/JPG)</label>
+        <input type="file" name="certificate_file" accept="image/*" required>
+        <button type="submit" class="btn primary">Run AI Recheck</button>
+    </form>
+
+    {% if trust_score is not none %}
+        <div class="ai-result">
+            <p><strong>Trust Score:</strong> {{ "%.2f"|format(trust_score) }}%</p>
+            {% if trust_score >= 90.0 %}
+                <p class="authentic">Status: Authentic</p>
+            {% else %}
+                <p class="not-authentic">Status: Not Authentic</p>
+            {% endif %}
+            {% if heatmap_path %}
+                <p>Difference Heatmap:</p>
+                <img src="{{ url_for('static', filename=heatmap_path) }}" alt="Heatmap" class="heatmap">
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <p><a href="{{ url_for('index') }}">Back to Landing</a></p>
+</div>
+</body>
+</html>
+

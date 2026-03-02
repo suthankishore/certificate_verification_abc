@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Login - ABC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Student Login</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <form method="post">
+        <label>Register Number</label>
+        <input type="text" name="register_number" required>
+        <label>Password</label>
+        <input type="password" name="password" required>
+        <button type="submit" class="btn primary">Login</button>
+    </form>
+    <p><a href="{{ url_for('index') }}">Back to Landing</a></p>
+</div>
+</body>
+</html>
+

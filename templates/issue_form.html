@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Issue Certificate - ABC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Issue Certificate</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <form method="post">
+        <label>Student Name</label>
+        <input type="text" name="student_name" required>
+        <label>Register Number</label>
+        <input type="text" name="register_number" required>
+        <label>Course</label>
+        <input type="text" name="course" required>
+        <label>Issue Date</label>
+        <input type="date" name="issue_date" required>
+        <button type="submit" class="btn primary">Generate &amp; Issue</button>
+    </form>
+    <p><a href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a></p>
+</div>
+</body>
+</html>
+

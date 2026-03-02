@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - ABC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    {% if student_view %}
+        <h2>Student Dashboard</h2>
+        <p>View and download your issued certificates.</p>
+        <div class="button-group">
+            <a href="{{ url_for('student.list_certificates') }}" class="btn primary">My Certificates</a>
+            <a href="{{ url_for('student.logout') }}" class="btn secondary">Logout</a>
+        </div>
+    {% else %}
+        <h2>Admin Dashboard</h2>
+        <div class="button-group">
+            <a href="{{ url_for('admin.issue_certificate') }}" class="btn primary">Issue Certificate</a>
+            <a href="{{ url_for('admin.issued_certificates') }}" class="btn secondary">View Issued Certificates</a>
+            <a href="{{ url_for('admin.logout') }}" class="btn">Logout</a>
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>
+

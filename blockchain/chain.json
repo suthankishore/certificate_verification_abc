@@ -182,5 +182,13 @@
     "cid": "0ee8d7f743284f96bd75595b995447d9",
     "previous_hash": "4c9ef332305936267809c1192d6fa4b9faf49275342d5566472ffeff1d8e62de",
     "current_hash": "e8f2230be129a15f66772312d833981fe8cbb20f345f8c5ec3c3ecc9f5bdfdba"
+  },
+  {
+    "index": 23,
+    "timestamp": 1773044082.0014853,
+    "certificate_hash": "5c97d83c4c8581955c0c91e1706e71eadc82efd25c91953e5e04d4cfaaad3286",
+    "cid": "ec4c7ff48f4346e89f32ea7310271ce1",
+    "previous_hash": "e8f2230be129a15f66772312d833981fe8cbb20f345f8c5ec3c3ecc9f5bdfdba",
+    "current_hash": "741abcdc71ce97b1934d9c9d09be33e60cbadf7cf6bbb74824133391c44275b1"
   }
 ]

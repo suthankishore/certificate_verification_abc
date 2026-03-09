@@ -1,0 +1,65 @@
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #ffffff;
+    color: #1e293b;
+    overflow-x: hidden;
+}
+
+/* White Glassmorphism */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 24px;
+    transition: all 0.4s ease;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
+}
+
+/* Animated Background Blobs (Light Version) */
+.blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    filter: blur(80px);
+    z-index: -1;
+    border-radius: 50%;
+    animation: move 15s infinite alternate ease-in-out;
+}
+
+@keyframes move {
+    from { transform: translate(-5%, -5%) scale(1); }
+    to { transform: translate(10%, 10%) scale(1.1); }
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+    transform: scale(1.02);
+}
+
+.floating {
+    animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+}
+
+.nav-blur {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}

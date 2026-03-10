@@ -36,7 +36,7 @@ IPFS_STORAGE_DIR = UPLOAD_ROOT / "ipfs"
 
 # Base URL used inside QR codes
 # Default should not be localhost; use a placeholder domain. Override via ABC_BASE_URL.
-BASE_URL = "http://10.199.107.206:5000"
+BASE_URL = "https://certificate-verification-abc-3.onrender.com"
 
 # SSL/HTTPS Configuration
 # For production with a real domain and valid certificate (e.g. Let's Encrypt):

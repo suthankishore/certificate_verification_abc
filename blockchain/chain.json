@@ -190,5 +190,21 @@
     "cid": "ec4c7ff48f4346e89f32ea7310271ce1",
     "previous_hash": "e8f2230be129a15f66772312d833981fe8cbb20f345f8c5ec3c3ecc9f5bdfdba",
     "current_hash": "741abcdc71ce97b1934d9c9d09be33e60cbadf7cf6bbb74824133391c44275b1"
+  },
+  {
+    "index": 24,
+    "timestamp": 1773129281.2117207,
+    "certificate_hash": "f1da9c70c009f16fd1fc63b4de448ddd402e4159373fd74311f88a9772ba7a01",
+    "cid": "3337009408314f92b65d6d46aad61fde",
+    "previous_hash": "741abcdc71ce97b1934d9c9d09be33e60cbadf7cf6bbb74824133391c44275b1",
+    "current_hash": "8c0bff6b8ce6a97e3781740115adbbca105c7e0e28cfcae7fbec6fdc69b406a6"
+  },
+  {
+    "index": 25,
+    "timestamp": 1773129778.6918297,
+    "certificate_hash": "0624e695b7d5c71c4ac6a0ff1f32a1910af9be1fae6355900dbdae1f066d546c",
+    "cid": "484456c513c0447080e9416e75ff130a",
+    "previous_hash": "8c0bff6b8ce6a97e3781740115adbbca105c7e0e28cfcae7fbec6fdc69b406a6",
+    "current_hash": "20912b278946257cc19aaf4d864c675e4023de53af35ff57f152addf5293320c"
   }
 ]

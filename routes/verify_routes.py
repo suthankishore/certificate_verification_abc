@@ -18,13 +18,14 @@ from services.blockchain_service import validate_chain, find_block_by_cid
 verify_bp = Blueprint("verify", __name__)
 
 
-@verify_bp.route("/verify/<cert_id>", methods=["GET", "POST"])
-async def verify_certificate(cert_id: str):
-    # Resolve certificate by CID, then locate blockchain block by stored CID
+@verify_bp.route("/verify/<int:cert_id>", methods=["GET", "POST"])
+async def verify_certificate(cert_id: int):
+
     cert = await asyncio.to_thread(get_certificate_by_id, cert_id)
+
     if not cert:
-        # invalid id, show message but continue so template can render minimal page
         flash("Certificate not found.", "danger")
+
     cid = cert.cid if cert else None
     # Validate chain in thread to avoid blocking event loop
     chain_valid = await asyncio.to_thread(validate_chain)

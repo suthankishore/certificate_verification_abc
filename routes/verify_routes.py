@@ -21,7 +21,7 @@ verify_bp = Blueprint("verify", __name__)
 @verify_bp.route("/verify/<cert_id>", methods=["GET", "POST"])
 async def verify_certificate(cert_id: str):
     # Resolve certificate by CID, then locate blockchain block by stored CID
-    cert = await asyncio.to_thread(get_certificate_by_cid, cert_id)
+    cert = await asyncio.to_thread(get_certificate_by_id, cert_id)
     if not cert:
         # invalid id, show message but continue so template can render minimal page
         flash("Certificate not found.", "danger")

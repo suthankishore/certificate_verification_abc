@@ -22,21 +22,28 @@ verify_bp = Blueprint("verify", __name__)
 async def verify_certificate(cert_id: int):
 
     cert = await asyncio.to_thread(get_certificate_by_id, cert_id)
+    print("cert_id:", cert_id)
+    print("cert:", cert)
 
     if not cert:
         flash("Certificate not found.", "danger")
+        cid = None
+        blockchain_verified = False
+        chain_valid = False
+        trust_score = None
+        heatmap_path = None
+        blockchain_tx = None
+    else:
+        cid = cert.cid
+        # Validate chain in thread to avoid blocking event loop
+        chain_valid = await asyncio.to_thread(validate_chain)
+        block = await asyncio.to_thread(find_block_by_cid, cid) if cid else None
+        blockchain_verified = bool(block and chain_valid)
+        trust_score = None
+        heatmap_path = None
 
-    cid = cert.cid if cert else None
-    # Validate chain in thread to avoid blocking event loop
-    chain_valid = await asyncio.to_thread(validate_chain)
-    block = await asyncio.to_thread(find_block_by_cid, cid) if cid else None
-    blockchain_verified = bool(block and chain_valid)
-    trust_score = None
-    heatmap_path = None
-
-    # Read precomputed AI metadata (if present) to avoid heavy processing on GET.
-    blockchain_tx = None
-    if cert:
+        # Read precomputed AI metadata (if present) to avoid heavy processing on GET.
+        blockchain_tx = None
         meta_path = FINAL_UPLOAD_DIR / f"meta_{cert.id}.json"
         if meta_path.exists():
             try:

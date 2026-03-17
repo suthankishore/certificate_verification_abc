@@ -302,5 +302,13 @@
     "cid": "d9ac25d145b7454d885cc50b504810fc",
     "previous_hash": "1fac16b2269d5454d7828d4e30a950d03637f31bc724a0b7cfc5b8f6ddcd5a77",
     "current_hash": "86e65cf43db90dc84ff410a8df379a93618fcc7a3801bc9063cf7a67a83e9316"
+  },
+  {
+    "index": 38,
+    "timestamp": 1773767797.791636,
+    "certificate_hash": "6fb5704040a5a2a817eeeb17a3744d6859228d90dcda290659b0b0d181ffb49b",
+    "cid": "5b9fceeb81f64e69b1836aa966345294",
+    "previous_hash": "86e65cf43db90dc84ff410a8df379a93618fcc7a3801bc9063cf7a67a83e9316",
+    "current_hash": "37dc8844963c8861c98057f535c9c3dc9ac67d25a7a92ffe5aa0a7aa868615a0"
   }
 ]

@@ -29,10 +29,14 @@
         <p><strong>Blockchain TX:</strong> {{ blockchain_tx }}</p>
     {% endif %}
 
-    <p><strong>Student:</strong> {{ certificate.student_name }}</p>
-    <p><strong>Register No:</strong> {{ certificate.register_number }}</p>
-    <p><strong>Course:</strong> {{ certificate.course }}</p>
-    <p><strong>Issue Date:</strong> {{ certificate.issue_date }}</p>
+    {% if certificate %}
+        <p><strong>Student:</strong> {{ certificate.student_name }}</p>
+        <p><strong>Register No:</strong> {{ certificate.register_number }}</p>
+        <p><strong>Course:</strong> {{ certificate.course }}</p>
+        <p><strong>Issue Date:</strong> {{ certificate.issue_date }}</p>
+    {% else %}
+        <p><em>Certificate record is not available in the database.</em></p>
+    {% endif %}
 
     <h3>AI Forgery Check</h3>
 

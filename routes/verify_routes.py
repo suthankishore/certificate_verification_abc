@@ -64,12 +64,15 @@ async def verify_certificate(cert_id: int | None = None):
 
             parsed_cid = extract_cid_from_qr_image(str(upload_path))
             if parsed_cid:
-                fetched_cid = parsed_cid
-                cert = await asyncio.to_thread(get_certificate_by_cid, fetched_cid)
+                if parsed_cid.isdigit():
+                    cert_id = int(parsed_cid)
+                    cert = await asyncio.to_thread(get_certificate_by_id, cert_id)
+                else:
+                    cert = await asyncio.to_thread(get_certificate_by_cid, parsed_cid)
                 if cert:
                     cert_id = cert.id
-                    fetched_cid = cert.cid  # canonical
-                block = await asyncio.to_thread(find_block_by_cid, fetched_cid)
+                    fetched_cid = cert.cid
+                block = await asyncio.to_thread(find_block_by_cid, fetched_cid) if fetched_cid else None
                 blockchain_verified = bool(chain_valid and block)
                 blockchain_tx = block.current_hash if block else None
             else:
@@ -86,6 +89,11 @@ async def verify_certificate(cert_id: int | None = None):
                         trust_score, heatmap_rel = await asyncio.to_thread(
                             compare_certificates, str(original_image_path), str(upload_path)
                         )
+                        # Calculate trust score: Blockchain +60, Content +20, Logo/Signature +20
+                        blockchain_score = 60 if blockchain_verified else 0
+                        content_score = 20 if trust_score > 80 else (trust_score / 100 * 20)
+                        logo_sig_score = 20 if trust_score > 90 else 0
+                        trust_score = blockchain_score + content_score + logo_sig_score
                         heatmap_path = heatmap_rel
                         update_certificate_verification(cert.id, trust_score, heatmap_path, blockchain_tx)
                     except Exception as exc:  # pragma: no cover - defensive

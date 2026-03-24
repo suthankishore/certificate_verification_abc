@@ -41,7 +41,7 @@ def extract_cid_from_qr_image(image_path: str) -> str | None:
     # Path contains /verify/<id> or /cid/<cid>
     match = re.search(r"/verify/(\d+)", parsed.path)
     if match:
-        return None  # this means we have an ID, handled separately in route
+        return match.group(1)  # return certificate_id
 
     match = re.search(r"/cid/([A-Za-z0-9]{10,})", parsed.path)
     if match:

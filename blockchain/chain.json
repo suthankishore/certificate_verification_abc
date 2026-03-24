@@ -350,5 +350,21 @@
     "cid": "d7702fb475894702a55f1150e126c311",
     "previous_hash": "326396f4e88b04cc7fc04e3e9b2362fb807235d9584e8d62f3d005b3c9c01e5a",
     "current_hash": "7d366bf442a46696e09453fca6726339c6520a400747c57e46556b01298c5385"
+  },
+  {
+    "index": 44,
+    "timestamp": 1774369203.4894948,
+    "certificate_hash": "016229868ac5bab6a13b349f604e2cef2dad963db6ebf91120ada92edac77e95",
+    "cid": "5e515cc4c7d441cda41578d3733099d6",
+    "previous_hash": "7d366bf442a46696e09453fca6726339c6520a400747c57e46556b01298c5385",
+    "current_hash": "60d5f022d4442c1e9375caf65c5e0735391fb8834ad6af08bc4f7be4cdc46d20"
+  },
+  {
+    "index": 45,
+    "timestamp": 1774369203.9400036,
+    "certificate_hash": "21d47ff02aaf8c10c7794351f632fbf2298382d8a77661a0353369c06e5a101b",
+    "cid": "c193e656eb9f46399fccd6a0d991cf73",
+    "previous_hash": "60d5f022d4442c1e9375caf65c5e0735391fb8834ad6af08bc4f7be4cdc46d20",
+    "current_hash": "78c99e7cede850a12c5b33da41526083c21eacfcef38a7428af3d07214559ff1"
   }
 ]

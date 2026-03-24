@@ -22,7 +22,9 @@
     <!-- Certificate Verification Result -->
     <section class="verification-result">
         {% if blockchain_verified %}
-            <h2 class="verified">CERTIFICATE VERIFIED ✅</h2>
+            <h2 class="verified">CERTIFICATE VERIFIED ✅ Blockchain Verified</h2>
+        {% elif certificate %}
+            <h2 class="unverified">❌ Certificate Invalid</h2>
         {% else %}
             <h2 class="unverified">❌ Certificate Invalid</h2>
         {% endif %}

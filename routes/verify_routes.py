@@ -14,6 +14,7 @@ from models.certificate_model import get_certificate_by_cid, get_certificate_by_
 from services.ai_service import compare_certificates
 from services.blockchain_service import validate_chain, find_block_by_cid
 from services.qr_service import extract_cid_from_qr_image
+from services.hash_service import hash_file_sha256
 
 
 verify_bp = Blueprint("verify", __name__)
@@ -42,10 +43,14 @@ async def verify_certificate(cert_id: int | None = None):
     heatmap_path = None
     blockchain_tx = None
 
-    if fetched_cid:
+    if cert and fetched_cid:
         block = await asyncio.to_thread(find_block_by_cid, fetched_cid)
-        blockchain_verified = bool(chain_valid and block)
-        blockchain_tx = block.current_hash if block else None
+        if block:
+            # Validate blockchain integrity only (no file dependency for basic verification)
+            blockchain_verified = chain_valid
+            blockchain_tx = block.current_hash
+        else:
+            blockchain_verified = False
 
     if cert and not blockchain_tx:
         blockchain_tx = getattr(cert, "blockchain_tx", None)

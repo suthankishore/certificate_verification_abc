@@ -148,10 +148,6 @@ def issue_certificate_workflow(
     block = add_block(cert_hash, cid)
 
     # STEP 5: insert a DB record now with placeholder filenames so we have a certificate_id
-    # Read the image data
-    with final_image_path.open("rb") as f:
-        image_data = f.read()
-    
     cert_id = insert_certificate(
         student_name=student_name,
         register_number=register_number,
@@ -160,8 +156,8 @@ def issue_certificate_workflow(
         cid=cid,
         blockchain_index=block.index,
         pdf_filename="",
-        image_filename=Path(final_image_path).name,
-        image_data=image_data,
+        image_filename="",
+        image_data=None,
     )
 
     # STEP 6: generate QR that points to verification by certificate ID
@@ -175,6 +171,10 @@ def issue_certificate_workflow(
 
     # STEP 8: update DB record with final filenames
     update_certificate_files(cert_id, Path(final_pdf_path).name, Path(final_image_path).name)
+
+    # STEP 9: read the generated final image and store its bytes
+    with final_image_path.open("rb") as f:
+        image_data = f.read()
 
     # STEP 9: run AI forgery detection once in backend (silently) to precompute baseline
     try:

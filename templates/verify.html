@@ -17,6 +17,14 @@
 <div class="container">
     <h2>Certificate Verification</h2>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <p><strong>CID:</strong> {{ cid }}</p>
 
     {% if blockchain_verified %}
@@ -35,12 +43,11 @@
     <p><strong>Issue Date:</strong> {{ certificate.issue_date }}</p>
 
     <h3>AI Forgery Check</h3>
-
     <form method="post" enctype="multipart/form-data">
+        <label>Select Certificate File</label>
         <input type="file" name="certificate_file" required>
-        <button type="submit" class="btn primary">Upload & Check</button>
+       <input type="submit" value="Upload & Check" class="btn primary">
     </form>
-
     {% if trust_score is not none %}
         <div class="ai-result">
             <p><strong>Trust Score:</strong> {{ "%.2f"|format(trust_score) }}%</p>

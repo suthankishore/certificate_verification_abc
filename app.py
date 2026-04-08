@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import (
     SECRET_KEY,
@@ -26,6 +27,7 @@ def create_app() -> Flask:
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config["SECRET_KEY"] = SECRET_KEY
     app.config["DEBUG"] = DEBUG
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     # Warn developer if configuration might cause QR SSL errors
     # e.g. using a private address with HTTPS enabled will trigger certificate
@@ -56,7 +58,8 @@ def create_app() -> Flask:
             proto = request.headers.get("X-Forwarded-Proto", request.scheme)
             if proto != "https":
                 url = request.url.replace("http://", "https://", 1)
-                return redirect(url, code=301)
+                # Preserve POST method and multipart body for upload forms.
+                return redirect(url, code=308)
 
     @app.route("/")
     def index():

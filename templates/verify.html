@@ -15,61 +15,32 @@
 {% else %}
 
 <div class="container">
-    <header>
-        <h1>ABC Certificate Verification System</h1>
-    </header>
+    <h2>Certificate Verification</h2>
 
-    <!-- Certificate Verification Result -->
-    <section class="verification-result">
-        {% if blockchain_verified %}
-            <h2 class="verified">CERTIFICATE VERIFIED ✅ Blockchain Verified</h2>
-        {% elif certificate %}
-            <h2 class="unverified">❌ Certificate Invalid</h2>
-        {% else %}
-            <h2 class="unverified">❌ Certificate Invalid</h2>
-        {% endif %}
-    </section>
+    <p><strong>CID:</strong> {{ cid }}</p>
 
-    <!-- Certificate Details -->
-    <section class="certificate-details">
-        <h3>Certificate Details</h3>
-        <p><strong>Certificate ID:</strong> {{ cert_id if cert_id else 'N/A' }}</p>
-        {% if certificate %}
-            <p><strong>Student Name:</strong> {{ certificate.student_name }}</p>
-            <p><strong>Course:</strong> {{ certificate.course }}</p>
-            <p><strong>Issued By:</strong> ABC Certificate Verification System</p>
-            <p><strong>IPFS CID:</strong> {{ cid }}</p>
-        {% else %}
-            <p><em>Certificate record is not available in the database.</em></p>
-        {% endif %}
-    </section>
+    {% if blockchain_verified %}
+        <p class="verified">Blockchain Verified ✔</p>
+    {% else %}
+        <p class="unverified">Not Verified</p>
+    {% endif %}
 
-    <!-- Blockchain Verification Status -->
-    <section class="blockchain-status">
-        <h3>Blockchain Verification</h3>
-        {% if blockchain_verified %}
-            <p>✔ Blockchain Record Found</p>
-            <p>✔ CID Hash Matched</p>
-            <p>✔ Certificate Authentic</p>
-        {% else %}
-            <p>❌ Blockchain record not found</p>
-        {% endif %}
-        {% if blockchain_tx %}
-            <p><strong>Blockchain TX:</strong> {{ blockchain_tx }}</p>
-        {% endif %}
-    </section>
+    {% if blockchain_tx %}
+        <p><strong>Blockchain TX:</strong> {{ blockchain_tx }}</p>
+    {% endif %}
 
-    <!-- Advanced Certificate Analysis -->
-    <section class="advanced-analysis">
-        <h3>Advanced Certificate Analysis</h3>
-        <p>Upload Certificate For Tampering Detection</p>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="certificate_file" required>
-            <button type="submit" class="btn primary">Upload Certificate</button>
-        </form>
-    </section>
+    <p><strong>Student:</strong> {{ certificate.student_name }}</p>
+    <p><strong>Register No:</strong> {{ certificate.register_number }}</p>
+    <p><strong>Course:</strong> {{ certificate.course }}</p>
+    <p><strong>Issue Date:</strong> {{ certificate.issue_date }}</p>
 
-    <!-- AI Tampering Detection Result -->
+    <h3>AI Forgery Check</h3>
+
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="certificate_file" required>
+        <button type="submit" class="btn primary">Upload & Check</button>
+    </form>
+
     {% if trust_score is not none %}
         <section class="ai-result">
             <h3>AI Tampering Detection Result</h3>

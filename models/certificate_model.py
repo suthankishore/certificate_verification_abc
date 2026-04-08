@@ -16,6 +16,7 @@ class Certificate:
     blockchain_index: int
     pdf_filename: str
     image_filename: str
+    image_data: bytes | None
     created_at: str
     # Optional stored metadata
     ai_score: float | None = None
@@ -32,6 +33,7 @@ def insert_certificate(
     blockchain_index: int,
     pdf_filename: str,
     image_filename: str,
+    image_data: bytes | None = None,
 ) -> int:
     conn = get_connection()
     cur = conn.cursor()
@@ -40,8 +42,8 @@ def insert_certificate(
         """
         INSERT INTO certificates
         (student_name, register_number, course, issue_date,
-         cid, blockchain_index, pdf_filename, image_filename, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         cid, blockchain_index, pdf_filename, image_filename, image_data, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             student_name,
@@ -52,6 +54,7 @@ def insert_certificate(
             blockchain_index,
             pdf_filename,
             image_filename,
+            image_data,
             created_at,
         ),
     )

@@ -59,10 +59,23 @@ def verify_certificate(cert_id: int):
 
                 uploaded_file.save(upload_path)
                 print("📁 Saved to:", upload_path)
+                print("Upload exists:", upload_path.exists())
 
-                original_image_path = FINAL_UPLOAD_DIR / cert.image_filename
+                print("FINAL_UPLOAD_DIR:", FINAL_UPLOAD_DIR)
+                # Use image_data from DB instead of file
+                if cert.image_data:
+                    original_image_path = TEMP_UPLOAD_DIR / f"original_{cert_id}.png"
+                    with original_image_path.open("wb") as f:
+                        f.write(cert.image_data)
+                else:
+                    original_image_path = FINAL_UPLOAD_DIR / cert.image_filename
+
+                print("Original path:", original_image_path)
+                print("Original str path:", str(original_image_path))
+                print("Exists:", original_image_path.exists())
 
                 try:
+                    print("Calling compare_certificates with:", str(original_image_path), str(upload_path))
                     trust_score, heatmap_rel = compare_certificates(
                         str(original_image_path),
                         str(upload_path),

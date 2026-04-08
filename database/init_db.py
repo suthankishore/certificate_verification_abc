@@ -31,6 +31,7 @@ def init_db() -> None:
             blockchain_index INTEGER NOT NULL,
             pdf_filename TEXT NOT NULL,
             image_filename TEXT NOT NULL,
+            image_data BLOB,
             created_at TEXT NOT NULL
         );
         """
@@ -46,13 +47,15 @@ def _ensure_columns():
     cur = conn.cursor()
     cur.execute("PRAGMA table_info(certificates)")
     cols = [row[1] for row in cur.fetchall()]
-    # Add ai_score, heatmap, blockchain_tx if they don't exist
+    # Add ai_score, heatmap, blockchain_tx, image_data if they don't exist
     if "ai_score" not in cols:
         cur.execute("ALTER TABLE certificates ADD COLUMN ai_score REAL DEFAULT NULL")
     if "heatmap" not in cols:
         cur.execute("ALTER TABLE certificates ADD COLUMN heatmap TEXT DEFAULT NULL")
     if "blockchain_tx" not in cols:
         cur.execute("ALTER TABLE certificates ADD COLUMN blockchain_tx TEXT DEFAULT NULL")
+    if "image_data" not in cols:
+        cur.execute("ALTER TABLE certificates ADD COLUMN image_data BLOB DEFAULT NULL")
     conn.commit()
     conn.close()
 

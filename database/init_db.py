@@ -26,7 +26,10 @@ def init_db() -> None:
             student_name TEXT NOT NULL,
             register_number TEXT NOT NULL,
             course TEXT NOT NULL,
+            department TEXT NOT NULL,
+            year TEXT NOT NULL,
             issue_date TEXT NOT NULL,
+            student_email TEXT NOT NULL,
             cid TEXT NOT NULL,
             blockchain_index INTEGER NOT NULL,
             pdf_filename TEXT NOT NULL,
@@ -39,6 +42,7 @@ def init_db() -> None:
 
     conn.commit()
     conn.close()
+    _ensure_columns()
 
 
 def _ensure_columns():
@@ -48,6 +52,12 @@ def _ensure_columns():
     cur.execute("PRAGMA table_info(certificates)")
     cols = [row[1] for row in cur.fetchall()]
     # Add ai_score, heatmap, blockchain_tx, image_data if they don't exist
+    if "department" not in cols:
+        cur.execute("ALTER TABLE certificates ADD COLUMN department TEXT DEFAULT ''")
+    if "year" not in cols:
+        cur.execute("ALTER TABLE certificates ADD COLUMN year TEXT DEFAULT ''")
+    if "student_email" not in cols:
+        cur.execute("ALTER TABLE certificates ADD COLUMN student_email TEXT DEFAULT ''")
     if "ai_score" not in cols:
         cur.execute("ALTER TABLE certificates ADD COLUMN ai_score REAL DEFAULT NULL")
     if "heatmap" not in cols:

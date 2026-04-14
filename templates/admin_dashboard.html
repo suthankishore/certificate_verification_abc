@@ -2,27 +2,145 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - ABC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ABC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-<div class="container">
-    {% if student_view %}
-        <h2>Student Dashboard</h2>
-        <p>View and download your issued certificates.</p>
-        <div class="button-group">
-            <a href="{{ url_for('student.list_certificates') }}" class="btn primary">My Certificates</a>
-            <a href="{{ url_for('student.logout') }}" class="btn secondary">Logout</a>
-        </div>
-    {% else %}
-        <h2>Admin Dashboard</h2>
-        <div class="button-group">
-            <a href="{{ url_for('admin.issue_certificate') }}" class="btn primary">Issue Certificate</a>
-            <a href="{{ url_for('admin.issued_certificates') }}" class="btn secondary">View Issued Certificates</a>
-            <a href="{{ url_for('admin.logout') }}" class="btn">Logout</a>
-        </div>
-    {% endif %}
-</div>
+<body class="dashboard-page">
+    <div class="page-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">ABC Certificate Verification System</p>
+                <h1>Admin Dashboard</h1>
+                <p class="topbar-note">Manage certificate issuance and verification</p>
+            </div>
+            <div class="topbar-actions">
+                <a href="{{ url_for('admin.issue_certificate') }}" class="btn primary btn-lg">
+                    <span class="btn-icon">+</span>
+                    Issue Certificate
+                </a>
+                <a href="{{ url_for('admin.logout') }}" class="btn btn-text">Logout</a>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">📄</span>
+                    <p class="stat-label">Total Certificates</p>
+                </div>
+                <p class="stat-value">{{ total_certificates }}</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">🕒</span>
+                    <p class="stat-label">Issued Today</p>
+                </div>
+                <p class="stat-value">{{ issued_today }}</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">✅</span>
+                    <p class="stat-label">Verified Certificates</p>
+                </div>
+                <p class="stat-value">{{ verified_certificates }}</p>
+            </article>
+        </section>
+
+        <section class="main-grid">
+            <article class="card chart-card">
+                <div class="card-header">
+                    <div>
+                        <h2>Monthly Certificate Issuance</h2>
+                        <p class="card-note">A compact view of certificate issuance over time.</p>
+                    </div>
+                </div>
+                <div class="chart-grid">
+                    {% for i in range(graph_labels|length) %}
+                        <div class="chart-row">
+                            <span class="chart-label">{{ graph_labels[i] }}</span>
+                            <div class="chart-bar-wrap">
+                                <div class="chart-bar" style="width: {{ (graph_values[i] / max_value * 100) if max_value else 0 }}%;"></div>
+                            </div>
+                            <span class="chart-value">{{ graph_values[i] }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <aside class="card actions-card">
+                <div class="card-header">
+                    <div>
+                        <h2>Quick Actions</h2>
+                        <p class="card-note">Jump to key workflows and logs.</p>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <a href="{{ url_for('admin.issued_certificates') }}" class="action-card" aria-label="View issued certificates">
+                        <div class="action-icon">📜</div>
+                        <div class="action-copy">
+                            <h3>View Issued Certificates</h3>
+                            <p>Browse all certificates and access verification metadata.</p>
+                        </div>
+                        <span class="action-arrow">→</span>
+                    </a>
+                    <a href="{{ url_for('verify.verify_certificate') }}" class="action-card" aria-label="Verification logs">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-copy">
+                            <h3>Verification Logs</h3>
+                            <p>Open the verification tool for certificate validation.</p>
+                        </div>
+                        <span class="action-arrow">→</span>
+                    </a>
+                    <a href="{{ url_for('admin.issued_certificates') }}" class="action-card" aria-label="Manage certificates">
+                        <div class="action-icon">🗂️</div>
+                        <div class="action-copy">
+                            <h3>Manage Certificates</h3>
+                            <p>Review, search, and manage your certificate records.</p>
+                        </div>
+                        <span class="action-arrow">→</span>
+                    </a>
+                </div>
+            </aside>
+        </section>
+
+        <section class="card activity-card">
+            <div class="card-header">
+                <div>
+                    <h2>Recent Activity</h2>
+                    <p class="card-note">Latest certificates issued and recorded in the system.</p>
+                </div>
+            </div>
+
+            <div class="activity-table-wrap">
+                {% if recent_activity %}
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Certificate ID</th>
+                                <th>Date Issued</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cert in recent_activity %}
+                                <tr>
+                                    <td>{{ cert.student_name }}</td>
+                                    <td>#{{ cert.id }}</td>
+                                    <td>{{ cert.created_at[:10] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="empty-state">No recent certificates found.</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
 </body>
 </html>
 

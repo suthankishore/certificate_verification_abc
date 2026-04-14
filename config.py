@@ -9,8 +9,17 @@ SECRET_KEY = os.environ.get("ABC_SECRET_KEY", "super-secret-abc-key")
 DEBUG = False
 
 # Admin credentials (hardcoded as requested)
-ADMIN_USERNAME = os.environ.get("ABC_ADMIN_USER", "admin")
+ADMIN_EMAIL = os.environ.get("ABC_ADMIN_EMAIL", "admin@example.com")
 ADMIN_PASSWORD = os.environ.get("ABC_ADMIN_PASS", "admin123")
+
+# Email delivery configuration
+EMAIL_HOST = os.environ.get("ABC_EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("ABC_EMAIL_PORT", "587"))
+EMAIL_USER = os.environ.get("ABC_EMAIL_USER", "suthankishore001@gmail.com")
+EMAIL_PASSWORD = os.environ.get("ABC_EMAIL_PASSWORD", "msncanxypidimxnu")
+EMAIL_FROM = os.environ.get("ABC_EMAIL_FROM", EMAIL_USER)
+EMAIL_USE_TLS = os.environ.get("ABC_EMAIL_USE_TLS", "true").lower() in ("1", "true", "yes")
+EMAIL_USE_SSL = os.environ.get("ABC_EMAIL_USE_SSL", "false").lower() in ("1", "true", "yes")
 
 # Simple student auth: register number + common password
 STUDENT_PASSWORD = os.environ.get("ABC_STUDENT_PASS", "student123")
@@ -36,7 +45,7 @@ IPFS_STORAGE_DIR = UPLOAD_ROOT / "ipfs"
 
 # Base URL used inside QR codes
 # Default should not be localhost; use a placeholder domain. Override via ABC_BASE_URL.
-BASE_URL = "https://certificate-verification-abc-3.onrender.com"
+BASE_URL = "http://127.0.0.1:5000"
 
 # SSL/HTTPS Configuration
 # For production with a real domain and valid certificate (e.g. Let's Encrypt):

@@ -2,68 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Verify Certificate - ABC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification - ABC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-{% if error %}
-<div class="container center">
-    <h2 style="color:red;">{{ error }}</h2>
-</div>
+<div class="container verification-container">
+    <div class="page-title">
+        <div>
+            <h1>Certificate Verification</h1>
+            <p class="page-intro">Validate your certificate instantly</p>
+            <p class="page-intro">Upload the certificate to compare it against the blockchain-backed original and generate a tamper heatmap.</p>
+        </div>
+    </div>
 
-{% else %}
-
-<div class="container">
-    <h2>Certificate Verification</h2>
-
-    <p><strong>CID:</strong> {{ cid }}</p>
-
-    {% if blockchain_verified %}
-        <p class="verified">Blockchain Verified ✔</p>
-    {% else %}
-        <p class="unverified">Not Verified</p>
+    {% if error %}
+        <div class="flash danger">{{ error }}</div>
     {% endif %}
 
-    {% if blockchain_tx %}
-        <p><strong>Blockchain TX:</strong> {{ blockchain_tx }}</p>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-    <p><strong>Student:</strong> {{ certificate.student_name }}</p>
-    <p><strong>Register No:</strong> {{ certificate.register_number }}</p>
-    <p><strong>Course:</strong> {{ certificate.course }}</p>
-    <p><strong>Issue Date:</strong> {{ certificate.issue_date }}</p>
-
-    <h3>AI Forgery Check</h3>
-
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="certificate_file" required>
-        <button type="submit" class="btn primary">Upload & Check</button>
-    </form>
-
-    {% if trust_score is not none %}
-        <section class="ai-result">
-            <h3>AI Tampering Detection Result</h3>
-            <p><strong>Trust Score:</strong> {{ "%.0f"|format(trust_score) }}/100</p>
-            {% if trust_score == 100 %}
-                <p class="verified">Authentic Certificate</p>
-            {% elif trust_score >= 70 %}
-                <p class="warning">Possible Modification</p>
-            {% else %}
-                <p class="unverified">High Risk of Forgery</p>
-            {% endif %}
-
-            {% if heatmap_path %}
-                <h4>Heatmap Visualization</h4>
-                <p>Green = original area, Red = modified area</p>
-                <img src="{{ url_for('static', filename=heatmap_path) }}" class="heatmap" alt="Tampering Heatmap">
-            {% endif %}
+    {% if certificate %}
+        <section class="blockchain-status">
+            <p class="eyebrow">Blockchain Status</p>
+            <h2 class="{{ 'verified' if status == 'Authentic' or blockchain_verified else 'unverified' }}">
+                {% if status == 'Authentic' %}
+                    ✔ Verified (Original Certificate)
+                {% elif status == 'Tampered' %}
+                    ❌ Not Verified (Fake Certificate)
+                {% elif blockchain_verified %}
+                    ✔ Verified (Original Certificate)
+                {% else %}
+                    ❌ Not Verified (Fake Certificate)
+                {% endif %}
+            </h2>
         </section>
+
+        <section class="card details-card">
+            <div class="card-header">
+                <h2>Certificate Details</h2>
+                <span class="tag">Blockchain Proof</span>
+            </div>
+            <div class="detail-grid">
+                <div><span class="detail-label">Student</span><span class="detail-value">{{ certificate.student_name }}</span></div>
+                <div><span class="detail-label">Register No</span><span class="detail-value">{{ certificate.register_number }}</span></div>
+                <div><span class="detail-label">Course</span><span class="detail-value">{{ certificate.course }}</span></div>
+                <div><span class="detail-label">Issue Date</span><span class="detail-value">{{ certificate.issue_date }}</span></div>
+                <div class="full-width"><span class="detail-label">CID</span><span class="detail-value">{{ cid or 'N/A' }}</span></div>
+            </div>
+        </section>
+
+        <section class="card upload-card">
+            <div class="card-header">
+                <h2>Upload certificate</h2>
+                <span class="tag tag-secondary">AI Check</span>
+            </div>
+            <p class="card-note">Choose the certificate PDF or image to compare it against the on-chain original.</p>
+            <form method="post" enctype="multipart/form-data" class="upload-form">
+                <label class="file-label">Certificate file</label>
+                <input type="file" name="certificate_file" accept=".pdf,.png,.jpg,.jpeg" required>
+                <button type="submit" class="btn primary">Run Verification</button>
+            </form>
+        </section>
+
+        {% if status %}
+            <section class="card results-card">
+                <div class="results-header">
+                    <div>
+                        <p class="eyebrow">Verification Result</p>
+                        <h2>{{ status }}</h2>
+                    </div>
+                    <div class="status-pill {{ 'verified' if status == 'Authentic' else 'unverified' }}">{{ status }}</div>
+                </div>
+                <div class="result-summary">
+                    <div class="stat-card">
+                        <p class="stat-label">Trust Score</p>
+                        <p class="stat-value">{{ "%.2f"|format(trust_score) }}%</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Blockchain</p>
+                        <p class="stat-value">{{ 'Verified' if status == 'Authentic' else 'Not verified' }}</p>
+                    </div>
+                </div>
+
+                {% if heatmap_path %}
+                    <div class="heatmap-card">
+                        <h3>Heatmap</h3>
+                        <img src="{{ url_for('static', filename=heatmap_path) }}" class="heatmap" alt="Certificate heatmap">
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
     {% endif %}
-
 </div>
-
-{% endif %}
 
 </body>
 </html>

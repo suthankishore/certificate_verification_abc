@@ -2,30 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - ABC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-<div class="container">
-    <h2>Admin Login</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-container">
-                {% for category, message in messages %}
-                    <div class="flash {{ category }}">{{ message }}</div>
-                {% endfor %}
+<body class="auth-page">
+<main class="auth-shell">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <div class="auth-logo" aria-hidden="true">ABC</div>
+            <div>
+                <p class="eyebrow">ABC Certificate Verification System</p>
+                <h1>Admin Login</h1>
+                <p class="auth-subtitle">Secure blockchain-based verification</p>
             </div>
-        {% endif %}
-    {% endwith %}
-    <form method="post">
-        <label>Username</label>
-        <input type="text" name="username" required>
-        <label>Password</label>
-        <input type="password" name="password" required>
-        <button type="submit" class="btn primary">Login</button>
-    </form>
-    <p><a href="{{ url_for('index') }}">Back to Landing</a></p>
-</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form id="admin-login-form" method="post" novalidate>
+            <div class="form-row">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" placeholder="Enter your email" autocomplete="username" required>
+                <div class="field-message" id="email-error"></div>
+            </div>
+
+            <div class="form-row">
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input id="password" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                    <button type="button" class="password-toggle" id="togglePassword">Show</button>
+                </div>
+                <div class="field-message" id="password-error"></div>
+            </div>
+
+            <button type="submit" class="btn primary login-btn" id="loginButton">
+                <span class="button-text">Login</span>
+                <span class="button-spinner" aria-hidden="true"></span>
+            </button>
+        </form>
+
+        <p class="auth-footer">Secure Blockchain-Based Verification</p>
+    </section>
+</main>
+
+<script>
+    const loginForm = document.getElementById('admin-login-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const emailError = document.getElementById('email-error');
+    const passwordError = document.getElementById('password-error');
+    const loginButton = document.getElementById('loginButton');
+    const buttonText = loginButton.querySelector('.button-text');
+    const buttonSpinner = loginButton.querySelector('.button-spinner');
+    const togglePassword = document.getElementById('togglePassword');
+
+    function resetErrors() {
+        emailError.textContent = '';
+        passwordError.textContent = '';
+        emailInput.classList.remove('input-error');
+        passwordInput.classList.remove('input-error');
+    }
+
+    function showError(field, message) {
+        field.textContent = message;
+    }
+
+    togglePassword.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        togglePassword.textContent = isPassword ? 'Hide' : 'Show';
+    });
+
+    loginForm.addEventListener('submit', (event) => {
+        resetErrors();
+        let hasError = false;
+
+        if (!emailInput.value.trim()) {
+            showError(emailError, 'Email is required.');
+            emailInput.classList.add('input-error');
+            hasError = true;
+        } else if (!emailInput.checkValidity()) {
+            showError(emailError, 'Enter a valid email address.');
+            emailInput.classList.add('input-error');
+            hasError = true;
+        }
+
+        if (!passwordInput.value.trim()) {
+            showError(passwordError, 'Password is required.');
+            passwordInput.classList.add('input-error');
+            hasError = true;
+        }
+
+        if (hasError) {
+            event.preventDefault();
+            return;
+        }
+
+        loginButton.disabled = true;
+        buttonText.textContent = 'Signing in...';
+        buttonSpinner.classList.add('visible');
+    });
+</script>
 </body>
 </html>
 

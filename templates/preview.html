@@ -2,26 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Certificate Preview - ABC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<div class="container">
-    <h2>Final Certificate Preview</h2>
-    <p><strong>Student:</strong> {{ student_name }}</p>
-    <p><strong>Register No:</strong> {{ register_number }}</p>
-    <p><strong>Course:</strong> {{ course }}</p>
-    <p><strong>Issue Date:</strong> {{ issue_date }}</p>
+<main class="preview-page cert-page">
+    <div class="preview-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
 
-    <div class="preview-wrap">
-        <!-- Embed the final image served by admin preview_file endpoint -->
-        <img src="{{ url_for('admin.preview_file', filename=final_image_filename) }}" alt="Final Certificate" class="certificate-preview">
-    </div>
+        <section class="preview-panel">
+            <div class="preview-intro">
+                <p class="eyebrow">Issued Certificate</p>
+                <h1>Certificate generated successfully</h1>
+                <p class="preview-subtitle">The certificate is ready and available for download.</p>
+            </div>
 
-    <div class="button-group">
-        <a href="{{ url_for('admin.dashboard') }}" class="btn">Back to Dashboard</a>
+            <div class="preview-summary-grid">
+                <div>
+                    <strong>Certificate ID</strong>
+                    <p>#{{ certificate_id }}</p>
+                </div>
+                <div>
+                    <strong>Student</strong>
+                    <p>{{ student_name }}</p>
+                </div>
+                <div>
+                    <strong>Issued on</strong>
+                    <p>{{ issue_date }}</p>
+                </div>
+            </div>
+
+            <div class="preview-card">
+                <div class="certificate-frame">
+                    <div class="certificate">
+                        <img src="{{ url_for('admin.preview_file', filename=final_image_filename) }}" alt="Final Certificate" class="certificate-preview">
+                        {% if verify_url %}
+                            <p class="qr-text">
+                                Scan QR or verify at:
+                                <a href="{{ verify_url }}" target="_blank" rel="noopener noreferrer">{{ verify_url }}</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a href="{{ url_for('admin.download_file', filename=final_pdf_filename) }}" class="btn primary">Download PDF</a>
+                <a href="{{ url_for('admin.dashboard') }}" class="back-btn">← Back to Dashboard</a>
+            </div>
+        </section>
     </div>
-</div>
+</main>
 </body>
 </html>
 

@@ -1,67 +1,78 @@
-from pathlib import Path
-from typing import Tuple
-
 import cv2
 import numpy as np
+import fitz
+import uuid
+from pathlib import Path
 
 from config import HEATMAP_DIR
 
 
-def _ensure_dirs() -> None:
+def _ensure_heatmap_dir() -> None:
     HEATMAP_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _resize_to_match(img1: np.ndarray, img2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Resize second image to match first image size.
-    """
-    h, w = img1.shape[:2]
-    resized = cv2.resize(img2, (w, h), interpolation=cv2.INTER_AREA)
-    return img1, resized
+def _save_heatmap(heatmap: np.ndarray) -> str:
+    _ensure_heatmap_dir()
+    output_filename = f"heatmap_{uuid.uuid4().hex}.png"
+    output_path = HEATMAP_DIR / output_filename
+    cv2.imwrite(str(output_path), heatmap)
+    return f"heatmaps/{output_filename}"
 
 
-def compare_certificates(
-    original_image_path: str,
-    uploaded_image_path: str,
-) -> Tuple[float, str]:
-    """
-    Perform a simple AI-based forgery detection using OpenCV.
+def compare_certificates(orig_image, uploaded_image, blockchain_verified: bool = False):
+    if not hasattr(orig_image, "shape"):
+        orig = cv2.imread(str(orig_image))
+    else:
+        orig = orig_image
 
-    - Convert both images to grayscale.
-    - Resize uploaded image to original size.
-    - Compute absolute difference and create heatmap.
-    - Derive trust score (0-100%) from normalized difference.
+    if orig is None:
+        raise FileNotFoundError(f"Original image not found: {orig_image}")
 
-    Returns (trust_score, heatmap_relative_path).
-    """
-    _ensure_dirs()
-    orig = cv2.imread(str(original_image_path))
-    uploaded = cv2.imread(str(uploaded_image_path))
+    if not hasattr(uploaded_image, "shape"):
+        uploaded = cv2.imread(str(uploaded_image))
+    else:
+        uploaded = uploaded_image
 
-    if orig is None or uploaded is None:
-        raise ValueError("Could not read one of the certificate images for AI comparison.")
+    if uploaded is None:
+        raise FileNotFoundError(f"Uploaded image not found: {uploaded_image}")
+
+    uploaded = cv2.resize(uploaded, (orig.shape[1], orig.shape[0]), interpolation=cv2.INTER_AREA)
+
+    heatmap = np.zeros_like(orig)
+    heatmap[:] = (0, 255, 0)
+
+    trust_score = 95 if blockchain_verified else 60
 
     orig_gray = cv2.cvtColor(orig, cv2.COLOR_BGR2GRAY)
     uploaded_gray = cv2.cvtColor(uploaded, cv2.COLOR_BGR2GRAY)
 
-    orig_gray, uploaded_gray = _resize_to_match(orig_gray, uploaded_gray)
+    h, w = orig_gray.shape
+    x1, x2 = int(w * 0.10), int(w * 0.90)
+    y1, y2 = int(h * 0.20), int(h * 0.70)
 
-    # Absolute difference
-    diff = cv2.absdiff(orig_gray, uploaded_gray)
-    norm_diff = cv2.normalize(diff.astype("float32"), None, 0.0, 1.0, cv2.NORM_MINMAX)
+    roi1 = orig_gray[y1:y2, x1:x2]
+    roi2 = uploaded_gray[y1:y2, x1:x2]
 
-    # Average difference used to compute trust score
-    mean_diff = float(np.mean(norm_diff))
-    trust_score = max(0.0, 100.0 * (1.0 - mean_diff))
+    diff = cv2.absdiff(roi1, roi2)
+    diff = cv2.GaussianBlur(diff, (5, 5), 0)
 
-    # Create heatmap for visualization
-    diff_8u = (norm_diff * 255).astype("uint8")
-    heatmap_color = cv2.applyColorMap(diff_8u, cv2.COLORMAP_JET)
+    if np.mean(diff) < 10:
+        return trust_score, _save_heatmap(heatmap)
 
-    heatmap_path = HEATMAP_DIR / f"heatmap_{Path(uploaded_image_path).stem}.png"
-    cv2.imwrite(str(heatmap_path), heatmap_color)
+    _, mask = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
+    kernel = np.ones((3, 3), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-    # Return path relative to static directory
-    relative_path = f"heatmaps/{heatmap_path.name}"
-    return trust_score, relative_path
+    region = heatmap[y1:y2, x1:x2]
+    region[mask == 255] = (0, 0, 255)
 
+    return trust_score, _save_heatmap(heatmap)
+
+
+def convert_pdf_to_image(pdf_path: str, output_dir: Path) -> Path:
+    doc = fitz.open(pdf_path)
+    page = doc.load_page(0)
+    pix = page.get_pixmap(matrix=fitz.Matrix(3, 3))
+    output_path = output_dir / f"converted_{Path(pdf_path).stem}.png"
+    pix.save(str(output_path))
+    return output_path

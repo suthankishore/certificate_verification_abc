@@ -17,18 +17,80 @@
             </div>
         {% endif %}
     {% endwith %}
-    <form method="post">
-        <label>Student Name</label>
-        <input type="text" name="student_name" required>
-        <label>Register Number</label>
-        <input type="text" name="register_number" required>
-        <label>Course</label>
-        <input type="text" name="course" required>
-        <label>Issue Date</label>
-        <input type="date" name="issue_date" required>
-        <button type="submit" class="btn primary">Generate &amp; Issue</button>
+    <form id="issueForm" method="post" novalidate>
+        <div class="form-grid">
+            <div class="form-row">
+                <label>Student Name</label>
+                <input type="text" name="student_name" required value="{{ form_data.student_name | default('') }}">
+            </div>
+            <div class="form-row">
+                <label>Register Number</label>
+                <input type="text" name="register_number" required value="{{ form_data.register_number | default('') }}">
+            </div>
+            <div class="form-row">
+                <label>Degree</label>
+                <input type="text" name="degree" required value="{{ form_data.degree | default('') }}">
+            </div>
+            <div class="form-row">
+                <label>Department</label>
+                <input type="text" name="department" required value="{{ form_data.department | default('') }}">
+            </div>
+            <div class="form-row">
+                <label>Year of Passing</label>
+                <input type="text" name="year" inputmode="numeric" pattern="\d*" required value="{{ form_data.year | default('') }}">
+            </div>
+            <div class="form-row">
+                <label>Issue Date</label>
+                <input type="date" name="issue_date" required value="{{ form_data.issue_date | default('') }}">
+            </div>
+            <div class="form-row full-width">
+                <label>Student Email</label>
+                <input type="email" name="student_email" placeholder="Enter student email" required value="{{ form_data.student_email | default('') }}">
+            </div>
+        </div>
+        <button type="submit" id="issueSubmit" class="btn primary">Generate &amp; Issue</button>
     </form>
     <p><a href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a></p>
+
+<script>
+    const issueForm = document.getElementById('issueForm');
+    const issueSubmit = document.getElementById('issueSubmit');
+
+    issueForm.addEventListener('submit', function (event) {
+        const emailInput = issueForm.querySelector('input[name="student_email"]');
+        const yearInput = issueForm.querySelector('input[name="year"]');
+        const degreeInput = issueForm.querySelector('input[name="degree"]');
+        const departmentInput = issueForm.querySelector('input[name="department"]');
+
+        const emailValue = emailInput.value.trim();
+        const yearValue = yearInput.value.trim();
+        const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+        const yearPattern = /^\d{4}$/;
+
+        if (!degreeInput.value.trim() || !departmentInput.value.trim()) {
+            event.preventDefault();
+            alert('Please enter both Degree and Department.');
+            return;
+        }
+
+        if (!yearPattern.test(yearValue)) {
+            event.preventDefault();
+            alert('Please enter a valid 4-digit Year of Passing.');
+            yearInput.focus();
+            return;
+        }
+
+        if (!emailPattern.test(emailValue)) {
+            event.preventDefault();
+            alert('Please enter a valid student email address.');
+            emailInput.focus();
+            return;
+        }
+
+        issueSubmit.disabled = true;
+        issueSubmit.textContent = 'Issuing...';
+    });
+</script>
 </div>
 </body>
 </html>

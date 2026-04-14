@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from config import BLOCKCHAIN_PATH
 from models.certificate_model import (
     insert_certificate,
+    update_certificate_chain_data,
     update_certificate_files,
     update_certificate_verification,
 )
@@ -16,7 +17,6 @@ from services.ipfs_service import upload_to_ipfs_local
 from services.pdf_service import create_temp_certificate_pdf, embed_qr_and_create_final_pdf
 from services.qr_service import generate_qr_for_certificate_id
 from services.ai_service import compare_certificates
-import json
 
 
 @dataclass
@@ -120,8 +120,11 @@ def find_block_by_cid(cid: str) -> Optional[Block]:
 def issue_certificate_workflow(
     student_name: str,
     register_number: str,
-    course: str,
+    degree: str,
+    department: str,
+    year: str,
     issue_date: str,
+    student_email: str = "",
 ) -> Dict[str, Any]:
     """
     Fully automated certificate issuance workflow implementing the required steps.
@@ -134,43 +137,48 @@ def issue_certificate_workflow(
     temp_pdf_path, base_image_path = create_temp_certificate_pdf(
         student_name=student_name,
         register_number=register_number,
-        course=course,
+        degree=degree,
+        department=department,
+        year=year,
         issue_date=issue_date,
     )
 
-    # STEP 2: SHA256 hash of PDF
-    cert_hash = hash_file_sha256(str(temp_pdf_path))
-
-    # STEP 3: Upload certificate to IPFS-like storage
-    cid = upload_to_ipfs_local(str(temp_pdf_path))
-
-    # STEP 4: store in blockchain
-    block = add_block(cert_hash, cid)
-
-    # STEP 5: insert a DB record now with placeholder filenames so we have a certificate_id
+    # STEP 2: insert a DB record now with placeholder blockchain metadata so we have a certificate_id
     cert_id = insert_certificate(
         student_name=student_name,
         register_number=register_number,
-        course=course,
+        course=degree,
+        department=department,
+        year=year,
         issue_date=issue_date,
-        cid=cid,
-        blockchain_index=block.index,
+        student_email=student_email,
+        cid="",
+        blockchain_index=0,
         pdf_filename="",
         image_filename="",
         image_data=None,
     )
 
-    # STEP 6: generate QR that points to verification by certificate ID
-    qr_path = generate_qr_for_certificate_id(cert_id)
+    # STEP 3: generate QR that points to verification by certificate ID
+    qr_path, verify_url = generate_qr_for_certificate_id(cert_id)
 
-    # STEP 7: embed QR and save final PDF
+    # STEP 4: embed QR and save final PDF with verification text
     final_pdf_path, final_image_path = embed_qr_and_create_final_pdf(
         base_image_path=base_image_path,
         qr_image_path=qr_path,
+        verify_url=verify_url,
     )
 
-    # STEP 8: update DB record with final filenames
+    # STEP 5: calculate final PDF hash and upload the final PDF to IPFS-like storage
+    cert_hash = hash_file_sha256(str(final_pdf_path))
+    cid = upload_to_ipfs_local(str(final_pdf_path))
+
+    # STEP 6: store in blockchain using final certificate hash and CID
+    block = add_block(cert_hash, cid)
+
+    # STEP 7: update DB record with final filenames and blockchain metadata
     update_certificate_files(cert_id, Path(final_pdf_path).name, Path(final_image_path).name)
+    update_certificate_chain_data(cert_id, cid, block.index)
 
     # STEP 9: read the generated final image and store its bytes
     with final_image_path.open("rb") as f:
@@ -208,6 +216,7 @@ def issue_certificate_workflow(
         "certificate_id": cert_id,
         "cid": cid,
         "blockchain_index": block.index,
+        "verify_url": verify_url,
         "final_pdf_path": str(final_pdf_path),
         "final_image_path": str(final_image_path),
     }

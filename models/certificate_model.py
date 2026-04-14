@@ -11,7 +11,10 @@ class Certificate:
     student_name: str
     register_number: str
     course: str
+    department: str
+    year: str
     issue_date: str
+    student_email: str
     cid: str
     blockchain_index: int
     pdf_filename: str
@@ -33,6 +36,9 @@ def insert_certificate(
     blockchain_index: int,
     pdf_filename: str,
     image_filename: str,
+    department: str = "",
+    year: str = "",
+    student_email: str = "",
     image_data: bytes | None = None,
 ) -> int:
     conn = get_connection()
@@ -41,15 +47,17 @@ def insert_certificate(
     cur.execute(
         """
         INSERT INTO certificates
-        (student_name, register_number, course, issue_date,
-         cid, blockchain_index, pdf_filename, image_filename, image_data, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (student_name, register_number, course, department, year, issue_date, student_email, cid, blockchain_index, pdf_filename, image_filename, image_data, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             student_name,
             register_number,
             course,
+            department,
+            year,
             issue_date,
+            student_email,
             cid,
             blockchain_index,
             pdf_filename,
@@ -110,6 +118,18 @@ def update_certificate_files(cert_id: int, pdf_filename: str, image_filename: st
     cur.execute(
         "UPDATE certificates SET pdf_filename = ?, image_filename = ? WHERE id = ?",
         (pdf_filename, image_filename, cert_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def update_certificate_chain_data(cert_id: int, cid: str, blockchain_index: int) -> None:
+    """Update blockchain metadata on an existing certificate record."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE certificates SET cid = ?, blockchain_index = ? WHERE id = ?",
+        (cid, blockchain_index, cert_id),
     )
     conn.commit()
     conn.close()

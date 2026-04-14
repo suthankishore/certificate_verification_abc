@@ -2,61 +2,200 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Issued Certificates - ABC</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-<div class="container">
-    <h2>{% if student_view %}My Certificates{% else %}Issued Certificates{% endif %}</h2>
+<body class="dashboard-page">
+<div class="page-shell">
+    <header class="page-heading">
+        <div>
+            <p class="eyebrow">Issued Certificates</p>
+            <h1>Certificate records</h1>
+            <p class="page-note">Search, filter, and manage certificate entries from a clean, modern table.</p>
+        </div>
+        <div class="heading-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-text">Back to Dashboard</a>
+        </div>
+    </header>
+
     {% if certificates %}
-        <table class="table">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Student</th>
-                <th>Register No</th>
-                <th>Course</th>
-                <th>Date</th>
-                <th>CID</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for cert in certificates %}
-                <tr>
-                    <td>{{ cert.id }}</td>
-                    <td>{{ cert.student_name }}</td>
-                    <td>{{ cert.register_number }}</td>
-                    <td>{{ cert.course }}</td>
-                    <td>{{ cert.issue_date }}</td>
-                    <td>{{ cert.cid }}</td>
-                    <td>
-                        {% if student_view %}
-                            <a href="{{ url_for('student.download_certificate', cert_id=cert.id) }}" class="btn small">
-                                Download
-                            </a>
-                        {% else %}
-                            <!-- Admin: View and Download buttons -->
-                            <a href="{{ url_for('admin.view_certificate', cert_id=cert.id) }}" class="btn small">
-                                View
-                            </a>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <section class="issued-table-card">
+            <div class="table-toolbar">
+                <div>
+                    <p class="toolbar-title">Issued Certificates</p>
+                    <p class="toolbar-subtitle">Search by student, register number, or certificate ID.</p>
+                </div>
+                <div class="toolbar-controls">
+                    <input id="tableSearch" type="search" class="table-search" placeholder="Search by name, register number, or certificate ID">
+                    <select id="courseFilter" class="table-filter">
+                        <option value="">All courses</option>
+                        {% for course in course_options %}
+                            <option value="{{ course }}">{{ course }}</option>
+                        {% endfor %}
+                    </select>
+                    <input id="dateFilter" type="date" class="table-filter date-filter" aria-label="Filter by issue date">
+                </div>
+            </div>
+
+            <div class="activity-table-wrap issued-table-wrap">
+                <table class="issued-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Register No</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>CID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="issuedTableBody">
+                        {% for cert in certificates %}
+                            {% set cid_display = cert.cid if cert.cid|length <= 20 else cert.cid[:8] ~ '...' ~ cert.cid[-8:] %}
+                            <tr class="issued-row" data-name="{{ cert.student_name }}" data-reg="{{ cert.register_number }}" data-course="{{ cert.course }}" data-date="{{ cert.issue_date }}" data-cid="{{ cert.cid }}" {% if not student_view %}data-view-url="{{ url_for('admin.view_certificate', cert_id=cert.id) }}"{% endif %}>
+                                <td class="cell-id">{{ cert.id }}</td>
+                                <td class="cell-name">{{ cert.student_name }}<span class="cell-meta">ID {{ cert.id }}</span></td>
+                                <td>{{ cert.register_number }}</td>
+                                <td>{{ cert.course }}</td>
+                                <td class="cell-date">{{ cert.issue_date }}</td>
+                                <td title="{{ cert.cid }}">
+                                    <div class="cid-cell">
+                                        <span class="cid-chip">{{ cid_display }}</span>
+                                        <button type="button" class="copy-button" data-copy="{{ cert.cid }}" aria-label="Copy CID">📋</button>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if student_view %}
+                                        <a href="{{ url_for('student.download_certificate', cert_id=cert.id) }}" class="btn outline small">Download</a>
+                                    {% else %}
+                                        <a href="{{ url_for('admin.view_certificate', cert_id=cert.id) }}" class="btn primary small">
+                                            <span class="action-icon">👁</span>
+                                            View
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-bar">
+                <button type="button" class="pagination-button" id="prevPage" disabled>Previous</button>
+                <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+                <button type="button" class="pagination-button" id="nextPage">Next</button>
+            </div>
+        </section>
     {% else %}
-        <p>No certificates found.</p>
+        <section class="issued-table-card empty-state-card">
+            <div class="empty-state-icon">📄</div>
+            <h2>No certificates issued yet</h2>
+            <p>Once certificates are created, they will appear here for review and verification.</p>
+        </section>
     {% endif %}
-    <p>
-        {% if student_view %}
-            <a href="{{ url_for('student.dashboard') }}">Back to Dashboard</a>
-        {% else %}
-            <a href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a>
-        {% endif %}
-    </p>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tableBody = document.getElementById('issuedTableBody');
+        const rows = Array.from(tableBody ? tableBody.querySelectorAll('.issued-row') : []);
+        const searchInput = document.getElementById('tableSearch');
+        const courseFilter = document.getElementById('courseFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const prevPage = document.getElementById('prevPage');
+        const nextPage = document.getElementById('nextPage');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const rowsPerPage = 10;
+        let currentPage = 1;
+
+        function updatePagination() {
+            const visibleRows = rows.filter(row => row.style.display !== 'none');
+            const totalPages = Math.max(1, Math.ceil(visibleRows.length / rowsPerPage));
+            currentPage = Math.min(currentPage, totalPages);
+
+            visibleRows.forEach((row, index) => {
+                const start = (currentPage - 1) * rowsPerPage;
+                row.style.display = index >= start && index < start + rowsPerPage ? 'table-row' : 'none';
+            });
+
+            prevPage.disabled = currentPage <= 1;
+            nextPage.disabled = currentPage >= totalPages;
+            paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+            if (!visibleRows.length) {
+                paginationInfo.textContent = 'No results found';
+            }
+        }
+
+        function applyFilters() {
+            const query = searchInput.value.trim().toLowerCase();
+            const course = courseFilter.value;
+            const date = dateFilter.value;
+
+            rows.forEach(row => {
+                const name = row.dataset.name.toLowerCase();
+                const reg = row.dataset.reg.toLowerCase();
+                const cid = row.dataset.cid.toLowerCase();
+                const rowCourse = row.dataset.course;
+                const rowDate = row.dataset.date;
+
+                const matchesQuery = !query || name.includes(query) || reg.includes(query) || cid.includes(query);
+                const matchesCourse = !course || course === rowCourse;
+                const matchesDate = !date || date === rowDate;
+
+                row.style.display = matchesQuery && matchesCourse && matchesDate ? 'table-row' : 'none';
+            });
+
+            currentPage = 1;
+            updatePagination();
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
+        if (courseFilter) {
+            courseFilter.addEventListener('change', applyFilters);
+        }
+        if (dateFilter) {
+            dateFilter.addEventListener('change', applyFilters);
+        }
+
+        prevPage.addEventListener('click', function () {
+            currentPage = Math.max(currentPage - 1, 1);
+            updatePagination();
+        });
+
+        nextPage.addEventListener('click', function () {
+            currentPage += 1;
+            updatePagination();
+        });
+
+        rows.forEach(row => {
+            const copyButton = row.querySelector('.copy-button');
+            const viewUrl = row.dataset.viewUrl;
+
+            if (copyButton) {
+                copyButton.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    navigator.clipboard.writeText(copyButton.dataset.copy).then(() => {
+                        copyButton.textContent = '✔';
+                        setTimeout(() => { copyButton.textContent = '📋'; }, 1200);
+                    });
+                });
+            }
+
+            if (viewUrl) {
+                row.addEventListener('click', function () {
+                    window.location.href = viewUrl;
+                });
+            }
+        });
+
+        updatePagination();
+    });
+</script>
 </body>
 </html>
 

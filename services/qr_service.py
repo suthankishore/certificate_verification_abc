@@ -50,32 +50,26 @@ def extract_cid_from_qr_image(image_path: str) -> str | None:
     return None
 
 
-def generate_qr_for_certificate_id(certificate_id: int) -> Path:
+def build_verification_url(certificate_id: int, cid: str | None = None) -> str:
     """
-    Generate a QR code PNG pointing to the verification endpoint for the given
-    certificate ID. The URL format is: {BASE_URL}/verify/<certificate_id>
-
-    BASE_URL should be configured via environment variable (ABC_BASE_URL).
-    When USE_HTTPS is enabled we enforce https://; otherwise http:// is used.
-
-    Returns the path to the generated PNG file.
+    Build the verification URL used for QR generation and certificate text.
     """
-    QR_DIR.mkdir(parents=True, exist_ok=True)
-
     # Normalize base URL and ensure proper scheme
     base = BASE_URL.strip().rstrip('/')
 
-    # if we're in a local testing environment with no real domain specified,
-    # generate a URL using the machine's local IP address so mobile scanners
-    # can access it over the LAN without SSL errors.
-    if not base or 'yourdomain.com' in base.lower():
-        from config import USE_HTTPS
+    from config import USE_HTTPS
 
+    if (
+        not base
+        or 'yourdomain.com' in base.lower()
+        or base.startswith('http://127.0.0.1')
+        or base.startswith('https://127.0.0.1')
+        or base.startswith('http://localhost')
+        or base.startswith('https://localhost')
+    ):
         if not USE_HTTPS:
             try:
-                # determine local IP by opening a UDP socket (no traffic sent)
                 import socket
-
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.connect(("8.8.8.8", 80))
                 local_ip = s.getsockname()[0]
@@ -88,17 +82,28 @@ def generate_qr_for_certificate_id(certificate_id: int) -> Path:
                     pass
 
             base = f"http://{local_ip}:5000"
+        else:
+            base = "https://localhost:5000"
 
     if not base.startswith('http://') and not base.startswith('https://'):
-        # pick a scheme based on configuration
-        from config import USE_HTTPS
-
         scheme = 'https' if USE_HTTPS else 'http'
         base = f"{scheme}://{base}"
 
-    verify_url = f"{base}/verify/{certificate_id}"
+    verify_path = cid if cid else str(certificate_id)
+    return f"{base}/verify/{verify_path}"
+
+
+def generate_qr_for_certificate_id(certificate_id: int, cid: str | None = None) -> tuple[Path, str]:
+    """
+    Generate a QR code PNG pointing to the verification endpoint.
+    Prefer a CID-based verification link when CID is available.
+
+    Returns the QR image path and the verification URL.
+    """
+    QR_DIR.mkdir(parents=True, exist_ok=True)
+    verify_url = build_verification_url(certificate_id, cid)
     img = qrcode.make(verify_url)
     output_path = QR_DIR / f"cert_{certificate_id}.png"
     img.save(output_path)
-    return output_path
+    return output_path, verify_url
 

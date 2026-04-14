@@ -32,17 +32,13 @@
     {% if certificate %}
         <section class="blockchain-status">
             <p class="eyebrow">Blockchain Status</p>
-            <h2 class="{{ 'verified' if status == 'Authentic' or blockchain_verified else 'unverified' }}">
-                {% if status == 'Authentic' %}
-                    ✔ Verified (Original Certificate)
-                {% elif status == 'Tampered' %}
-                    ❌ Not Verified (Fake Certificate)
-                {% elif blockchain_verified %}
-                    ✔ Verified (Original Certificate)
-                {% else %}
-                    ❌ Not Verified (Fake Certificate)
-                {% endif %}
-            </h2>
+            {% if status == 'Authentic' %}
+                <h2 class="verified">✔ Verified (Original Certificate)</h2>
+            {% elif status == 'Tampered' %}
+                <h2 class="unverified">❌ Tampered (Fake Certificate)</h2>
+            {% else %}
+                <p class="status-prompt">Please upload the certificate to verify authenticity</p>
+            {% endif %}
         </section>
 
         <section class="card details-card">

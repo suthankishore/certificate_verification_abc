@@ -40,21 +40,8 @@ def verify_certificate(identifier: str | None = None):
     else:
         cid = cert.cid
         chain_valid = validate_chain()
-        block = find_block_by_cid(cid) if cid else None
-        blockchain_verified = bool(block and chain_valid)
+        blockchain_verified = False
         blockchain_tx = getattr(cert, "blockchain_tx", None)
-
-        if blockchain_verified:
-            pdf_path = FINAL_UPLOAD_DIR / cert.pdf_filename
-            if pdf_path.exists():
-                try:
-                    current_hash = hash_file_sha256(str(pdf_path))
-                    blockchain_verified = current_hash == block.certificate_hash
-                except Exception as exc:
-                    print("❌ Hash compare failed:", exc)
-                    blockchain_verified = False
-            else:
-                blockchain_verified = False
 
     # 🔥 POST HANDLING (FIXED)
     if request.method == "POST":
@@ -86,6 +73,30 @@ def verify_certificate(identifier: str | None = None):
                 print("Upload exists:", upload_path.exists())
 
                 processing_image_path = str(upload_path)
+                uploaded_hash = None
+                block = None
+                if cid and chain_valid:
+                    block = find_block_by_cid(cid)
+
+                try:
+                    uploaded_hash = hash_file_sha256(str(upload_path))
+                except Exception as exc:
+                    print("❌ Uploaded file hash failed:", exc)
+                    flash("Unable to read uploaded certificate file.", "danger")
+                    return render_template(
+                        "verify.html",
+                        identifier=identifier,
+                        cid=cid,
+                        blockchain_verified=blockchain_verified,
+                        chain_valid=chain_valid,
+                        certificate=cert,
+                        trust_score=trust_score,
+                        heatmap_path=heatmap_path,
+                        blockchain_tx=blockchain_tx,
+                        status=status,
+                        error=error,
+                    )
+
                 if filename.lower().endswith(".pdf"):
                     print("📄 PDF conversion started for file:", upload_path)
                     try:
@@ -118,14 +129,17 @@ def verify_certificate(identifier: str | None = None):
                 else:
                     original_image_path = FINAL_UPLOAD_DIR / cert.image_filename
 
-                print("Original path:", original_image_path)
-                print("Original str path:", str(original_image_path))
-                print("Exists:", original_image_path.exists())
+                print("Hash compare against blockchain block:", block)
+                if not block or not chain_valid:
+                    blockchain_verified = False
+                    status = "Tampered"
+                else:
+                    blockchain_verified = uploaded_hash == block.certificate_hash
+                    status = "Authentic" if blockchain_verified else "Tampered"
+
+                trust_score = 95 if blockchain_verified else 60
 
                 try:
-                    status = "Authentic" if blockchain_verified else "Tampered"
-                    trust_score = 95 if blockchain_verified else 60
-
                     print("Calling compare_certificates with:", str(original_image_path), processing_image_path)
                     trust_score, heatmap_rel = compare_certificates(
                         str(original_image_path),
